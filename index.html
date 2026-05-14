@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デジタル日めくり</title>
+<style>
+body{
+  margin:0;
+  background:#fffdf5;
+  color:#111;
+  font-family:sans-serif;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+}
+.year{
+  font-size:6vw;
+  margin-bottom:4vh;
+}
+.date{
+  font-size:14vw;
+  font-weight:bold;
+}
+.weekday{
+  font-size:12vw;
+  font-weight:bold;
+}
+</style>
+</head>
+<body>
+<div>
+  <div class="year" id="year"></div>
+  <div class="date" id="date"></div>
+  <div class="weekday" id="weekday"></div>
+</div>
+
+<script>
+const now = new Date();
+const y = now.getFullYear();
+const m = now.getMonth() + 1;
+const d = now.getDate();
+const week = ["日曜日","月曜日","火曜日","水曜日","木曜日","金曜日","土曜日"][now.getDay()];
+const reiwa = y - 2018;
+
+document.getElementById("year").innerHTML = y + "年<br>令和" + reiwa + "年";
+document.getElementById("date").textContent = m + "月" + d + "日";
+document.getElementById("weekday").textContent = week;
+</script>
+</body>
+</html>
