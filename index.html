@@ -26,7 +26,7 @@ body {
 
 .container {
   width: 100%;
-  padding: 3vh 4vw;
+  padding: 2vh 4vw;
 }
 
 .year {
@@ -83,12 +83,6 @@ body {
   line-height: 1.4;
 }
 
-.message {
-  font-size: 4vw;
-  margin-top: 2vh;
-  line-height: 1.4;
-}
-
 @media (orientation: portrait) {
   .year { font-size: 6vw; }
   .date { font-size: 16vw; }
@@ -98,7 +92,6 @@ body {
   .schedule-title { font-size: 6vw; }
   .schedule-item { font-size: 6vw; }
   .schedule-empty { font-size: 6vw; }
-  .message { font-size: 5vw; }
 }
 </style>
 </head>
@@ -116,12 +109,10 @@ body {
     <div class="schedule-title">今日の予定</div>
     <div id="scheduleList" class="schedule-empty">読み込み中です</div>
   </div>
-
-  <div class="message" id="message"></div>
 </div>
 
 <script>
-const SCHEDULE_URL = "https://script.google.com/macros/s/AKfycbxB-VV7QDz1dZK-_7SPKotuRVRPZ4pcuw1_8WBE1nESFD8n2L0-zmbRKVC9Jmp3pNpA8w/exec";
+const SCHEDULE_URL = "https://script.google.com/macros/s/AKfycbws2wZCZsBDpybK-zDwA7ZAnoJA-Z8EtsXd18ScDI06DTqlqpzEr5cssdsHRCx240TkTQ/exec";
 
 function updateCalendar() {
   const now = new Date();
@@ -147,23 +138,17 @@ function updateCalendar() {
   const reiwa = y - 2018;
 
   let period = "";
-  let message = "";
 
   if (hour >= 4 && hour < 10) {
     period = "朝です";
-    message = "今日もゆっくり始めましょう";
   } else if (hour >= 10 && hour < 12) {
     period = "午前です";
-    message = "今日は何曜日か確認しましょう";
   } else if (hour >= 12 && hour < 17) {
     period = "午後です";
-    message = "無理せず過ごしましょう";
   } else if (hour >= 17 && hour < 21) {
     period = "夕方です";
-    message = "そろそろ夜の時間です";
   } else {
     period = "夜です";
-    message = "おやすみの準備をしましょう";
   }
 
   const mm = String(minute).padStart(2, "0");
@@ -182,38 +167,40 @@ function updateCalendar() {
 
   document.getElementById("time").textContent =
     hour + ":" + mm;
-
-  document.getElementById("message").textContent =
-    message;
 }
 
-async function loadSchedule() {
-  const scheduleList = document.getElementById("https://script.google.com/macros/s/AKfycbxB-VV7QDz1dZK-_7SPKotuRVRPZ4pcuw1_8WBE1nESFD8n2L0-zmbRKVC9Jmp3pNpA8w/exec");
+function loadSchedule() {
+  const oldScript = document.getElementById("scheduleScript");
 
-  try {
-    const response = await fetch(SCHEDULE_URL);
-    const events = await response.json();
-
-    if (!events || events.length === 0) {
-      scheduleList.className = "schedule-empty";
-      scheduleList.textContent = "今日の予定はありません";
-      return;
-    }
-
-    scheduleList.className = "";
-
-    scheduleList.innerHTML = events
-      .map(event => {
-        return '<div class="schedule-item">' +
-          event.time + "　" + event.title +
-          '</div>';
-      })
-      .join("");
-
-  } catch (error) {
-    scheduleList.className = "schedule-empty";
-    scheduleList.textContent = "予定を読み込めません";
+  if (oldScript) {
+    oldScript.remove();
   }
+
+  const script = document.createElement("script");
+  script.id = "scheduleScript";
+  script.src = SCHEDULE_URL + "?callback=showSchedule&_=" + new Date().getTime();
+
+  document.body.appendChild(script);
+}
+
+function showSchedule(events) {
+  const scheduleList = document.getElementById("scheduleList");
+
+  if (!events || events.length === 0) {
+    scheduleList.className = "schedule-empty";
+    scheduleList.textContent = "今日の予定はありません";
+    return;
+  }
+
+  scheduleList.className = "";
+
+  scheduleList.innerHTML = events
+    .map(event => {
+      return '<div class="schedule-item">' +
+        event.time + "　" + event.title +
+        '</div>';
+    })
+    .join("");
 }
 
 updateCalendar();
