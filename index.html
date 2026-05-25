@@ -85,6 +85,11 @@ body {
   <div class="time" id="time"></div>
   <div class="message" id="message"></div>
 </div>
+
+// 1時間ごとにページを再読み込み
+setInterval(() => {
+  location.reload();
+}, 60 * 60 * 1000);
   
 <script>
 function updateCalendar() {
@@ -133,6 +138,12 @@ function updateCalendar() {
 
 updateCalendar();
 setInterval(updateCalendar, 1000);
+
+  document.body.addEventListener("click", () => {
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen();
+  }
+});
 </script>
 </body>
 </html>
