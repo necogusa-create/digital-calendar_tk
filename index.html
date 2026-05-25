@@ -30,65 +30,75 @@ body {
 }
 
 .year {
-  font-size: 6vw;
-  margin-bottom: 3vh;
+  font-size: 5vw;
+  margin-bottom: 2vh;
   line-height: 1.3;
 }
 
 .date {
-  font-size: 16vw;
+  font-size: 14vw;
   font-weight: bold;
   line-height: 1.1;
 }
 
 .weekday {
-  font-size: 14vw;
+  font-size: 12vw;
   font-weight: bold;
-  margin-top: 2vh;
+  margin-top: 1vh;
 }
 
 .period {
-  font-size: 6vw;
-  font-weight: bold;
-  margin-top: 4vh;
-}
-
-.time {
-  font-size: 8vw;
+  font-size: 5vw;
   font-weight: bold;
   margin-top: 2vh;
 }
 
-.message {
+.time {
+  font-size: 7vw;
+  font-weight: bold;
+  margin-top: 1vh;
+}
+
+.schedule {
+  margin-top: 3vh;
+  padding-top: 2vh;
+  border-top: 0.4vw solid #333;
+}
+
+.schedule-title {
   font-size: 5vw;
-  margin-top: 4vh;
+  font-weight: bold;
+  margin-bottom: 1vh;
+}
+
+.schedule-item {
+  font-size: 5vw;
+  font-weight: bold;
+  line-height: 1.35;
+  margin-top: 1vh;
+}
+
+.schedule-empty {
+  font-size: 5vw;
+  line-height: 1.4;
+}
+
+.message {
+  font-size: 4vw;
+  margin-top: 2vh;
   line-height: 1.4;
 }
 
 @media (orientation: portrait) {
-  .year {
-    font-size: 7vw;
-  }
-
-  .date {
-    font-size: 18vw;
-  }
-
-  .weekday {
-    font-size: 16vw;
-  }
-
-  .period {
-    font-size: 7vw;
-  }
-
-  .time {
-    font-size: 10vw;
-  }
-
-  .message {
-    font-size: 6vw;
-  }
+  .year { font-size: 6vw; }
+  .date { font-size: 16vw; }
+  .weekday { font-size: 14vw; }
+  .period { font-size: 6vw; }
+  .time { font-size: 9vw; }
+  .schedule-title { font-size: 6vw; }
+  .schedule-item { font-size: 6vw; }
+  .schedule-empty { font-size: 6vw; }
+  .message { font-size: 5vw; }
 }
 </style>
 </head>
@@ -101,13 +111,19 @@ body {
   <div class="weekday" id="weekday"></div>
   <div class="period" id="period"></div>
   <div class="time" id="time"></div>
+
+  <div class="schedule">
+    <div class="schedule-title">今日の予定</div>
+    <div id="scheduleList" class="schedule-empty">読み込み中です</div>
+  </div>
+
   <div class="message" id="message"></div>
 </div>
 
 <script>
+const SCHEDULE_URL = "ここにApps ScriptのウェブアプリURLを貼る";
 
 function updateCalendar() {
-
   const now = new Date();
 
   const y = now.getFullYear();
@@ -128,34 +144,24 @@ function updateCalendar() {
   ];
 
   const weekday = weekdays[now.getDay()];
-
   const reiwa = y - 2018;
 
   let period = "";
   let message = "";
 
   if (hour >= 4 && hour < 10) {
-
     period = "朝です";
     message = "今日もゆっくり始めましょう";
-
   } else if (hour >= 10 && hour < 12) {
-
     period = "午前です";
     message = "今日は何曜日か確認しましょう";
-
   } else if (hour >= 12 && hour < 17) {
-
     period = "午後です";
     message = "無理せず過ごしましょう";
-
   } else if (hour >= 17 && hour < 21) {
-
     period = "夕方です";
     message = "そろそろ夜の時間です";
-
   } else {
-
     period = "夜です";
     message = "おやすみの準備をしましょう";
   }
@@ -181,24 +187,54 @@ function updateCalendar() {
     message;
 }
 
+async function loadSchedule() {
+  const scheduleList = document.getElementById("https://script.google.com/macros/s/AKfycbxB-VV7QDz1dZK-_7SPKotuRVRPZ4pcuw1_8WBE1nESFD8n2L0-zmbRKVC9Jmp3pNpA8w/exec");
+
+  try {
+    const response = await fetch(SCHEDULE_URL);
+    const events = await response.json();
+
+    if (!events || events.length === 0) {
+      scheduleList.className = "schedule-empty";
+      scheduleList.textContent = "今日の予定はありません";
+      return;
+    }
+
+    scheduleList.className = "";
+
+    scheduleList.innerHTML = events
+      .map(event => {
+        return '<div class="schedule-item">' +
+          event.time + "　" + event.title +
+          '</div>';
+      })
+      .join("");
+
+  } catch (error) {
+    scheduleList.className = "schedule-empty";
+    scheduleList.textContent = "予定を読み込めません";
+  }
+}
+
 updateCalendar();
+loadSchedule();
 
 setInterval(updateCalendar, 1000);
 
-// 3時間ごとに自動再読み込み
+// 予定は5分ごとに読み直し
+setInterval(loadSchedule, 5 * 60 * 1000);
+
+// 3時間ごとにページ全体を再読み込み
 setInterval(() => {
   location.reload();
 }, 3 * 60 * 60 * 1000);
 
 // タップ時に全画面化を試みる
 document.body.addEventListener("click", () => {
-
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen();
   }
-
 });
-
 </script>
 
 </body>
