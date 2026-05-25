@@ -29,18 +29,6 @@ body {
   padding: 3vh 4vw;
 }
 
-.period {
-  font-size: 6vw;
-  font-weight: bold;
-  margin-bottom: 2vh;
-}
-
-.time {
-  font-size: 8vw;
-  font-weight: bold;
-  margin-bottom: 3vh;
-}
-
 .year {
   font-size: 6vw;
   margin-bottom: 3vh;
@@ -59,6 +47,18 @@ body {
   margin-top: 2vh;
 }
 
+.period {
+  font-size: 6vw;
+  font-weight: bold;
+  margin-top: 4vh;
+}
+
+.time {
+  font-size: 8vw;
+  font-weight: bold;
+  margin-top: 2vh;
+}
+
 .message {
   font-size: 5vw;
   margin-top: 4vh;
@@ -66,17 +66,35 @@ body {
 }
 
 @media (orientation: portrait) {
-  .period { font-size: 10vw; }
-  .time { font-size: 15vw; }
-  .year { font-size: 10vw; }
-  .date { font-size: 20vw; }
-  .weekday { font-size: 15vw; }
-  .message { font-size: 6vw; }
+  .year {
+    font-size: 7vw;
+  }
+
+  .date {
+    font-size: 18vw;
+  }
+
+  .weekday {
+    font-size: 16vw;
+  }
+
+  .period {
+    font-size: 7vw;
+  }
+
+  .time {
+    font-size: 10vw;
+  }
+
+  .message {
+    font-size: 6vw;
+  }
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
   <div class="year" id="year"></div>
   <div class="date" id="date"></div>
@@ -86,22 +104,29 @@ body {
   <div class="message" id="message"></div>
 </div>
 
-// 1時間ごとにページを再読み込み
-setInterval(() => {
-  location.reload();
-}, 60 * 60 * 1000);
-  
 <script>
+
 function updateCalendar() {
+
   const now = new Date();
 
   const y = now.getFullYear();
   const m = now.getMonth() + 1;
   const d = now.getDate();
+
   const hour = now.getHours();
   const minute = now.getMinutes();
 
-  const weekdays = ["日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"];
+  const weekdays = [
+    "日曜日",
+    "月曜日",
+    "火曜日",
+    "水曜日",
+    "木曜日",
+    "金曜日",
+    "土曜日"
+  ];
+
   const weekday = weekdays[now.getDay()];
 
   const reiwa = y - 2018;
@@ -110,40 +135,71 @@ function updateCalendar() {
   let message = "";
 
   if (hour >= 4 && hour < 10) {
+
     period = "朝です";
     message = "今日もゆっくり始めましょう";
+
   } else if (hour >= 10 && hour < 12) {
+
     period = "午前です";
     message = "今日は何曜日か確認しましょう";
+
   } else if (hour >= 12 && hour < 17) {
+
     period = "午後です";
     message = "無理せず過ごしましょう";
+
   } else if (hour >= 17 && hour < 21) {
+
     period = "夕方です";
     message = "そろそろ夜の時間です";
+
   } else {
+
     period = "夜です";
     message = "おやすみの準備をしましょう";
   }
 
   const mm = String(minute).padStart(2, "0");
 
-  document.getElementById("period").textContent = period;
-  document.getElementById("time").textContent = hour + ":" + mm;
-  document.getElementById("year").innerHTML = y + "年<br>令和" + reiwa + "年";
-  document.getElementById("date").textContent = m + "月" + d + "日";
-  document.getElementById("weekday").textContent = weekday;
-  document.getElementById("message").textContent = message;
+  document.getElementById("year").innerHTML =
+    y + "年<br>令和" + reiwa + "年";
+
+  document.getElementById("date").textContent =
+    m + "月" + d + "日";
+
+  document.getElementById("weekday").textContent =
+    weekday;
+
+  document.getElementById("period").textContent =
+    period;
+
+  document.getElementById("time").textContent =
+    hour + ":" + mm;
+
+  document.getElementById("message").textContent =
+    message;
 }
 
 updateCalendar();
+
 setInterval(updateCalendar, 1000);
 
-  document.body.addEventListener("click", () => {
+// 3時間ごとに自動再読み込み
+setInterval(() => {
+  location.reload();
+}, 3 * 60 * 60 * 1000);
+
+// タップ時に全画面化を試みる
+document.body.addEventListener("click", () => {
+
   if (document.documentElement.requestFullscreen) {
     document.documentElement.requestFullscreen();
   }
+
 });
+
 </script>
+
 </body>
 </html>
