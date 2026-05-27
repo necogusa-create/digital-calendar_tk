@@ -4,12 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>デジタル日めくり</title>
-
 <style>
+/* ===== 画面全体の見た目 ===== */
 * {
   box-sizing: border-box;
 }
-
 body {
   margin: 0;
   width: 100vw;
@@ -23,206 +22,66 @@ body {
   text-align: center;
   overflow: hidden;
 }
-
 .container {
   width: 100%;
+  height: 100vh;
   padding: 2vh 4vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
-
+/* ===== 日付と時刻 ===== */
 .year {
-  font-size: 5vw;
-  margin-bottom: 2vh;
-  line-height: 1.3;
+  font-size: 4.2vw;
+  margin-bottom: 0.6vh;
+  line-height: 1.2;
 }
-
 .date {
-  font-size: 14vw;
+  font-size: 11vw;
   font-weight: bold;
-  line-height: 1.1;
+  line-height: 1.05;
 }
-
 .weekday {
-  font-size: 12vw;
+  font-size: 9vw;
   font-weight: bold;
-  margin-top: 1vh;
+  margin-top: 0.4vh;
 }
-
-.period {
-  font-size: 5vw;
-  font-weight: bold;
-  margin-top: 2vh;
-}
-
 .time {
-  font-size: 7vw;
+  font-size: 5.8vw;
   font-weight: bold;
-  margin-top: 1vh;
+  margin-top: 0.8vh;
 }
-
-.schedule {
-  margin-top: 3vh;
-  padding-top: 2vh;
-  border-top: 0.4vw solid #333;
+/* ===== 予定の共通デザイン ===== */
+.schedule-area {
+  margin-top: 2vh;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.2vh;
 }
-
+.schedule-box {
+  padding: 1.2vh 2.4vw;
+  border: 0.35vw solid #333;
+  background: #fffef8;
+  text-align: left;
+}
 .schedule-title {
-  font-size: 5vw;
+  font-size: 3.2vw;
   font-weight: bold;
-  margin-bottom: 1vh;
+  margin-bottom: 0.8vh;
+  text-align: center;
+  color: #666;
 }
-
+.tomorrow-date {
+  font-size: 4.4vw;
+  font-weight: bold;
+  line-height: 1.2;
+  margin-bottom: 0.8vh;
+  text-align: center;
+}
+.schedule-list {
+  min-height: 10vh;
+}
 .schedule-item {
-  font-size: 5vw;
+  font-size: 3.8vw;
   font-weight: bold;
-  line-height: 1.35;
-  margin-top: 1vh;
-}
-
-.schedule-empty {
-  font-size: 5vw;
-  line-height: 1.4;
-}
-
-@media (orientation: portrait) {
-  .year { font-size: 6vw; }
-  .date { font-size: 16vw; }
-  .weekday { font-size: 14vw; }
-  .period { font-size: 6vw; }
-  .time { font-size: 9vw; }
-  .schedule-title { font-size: 6vw; }
-  .schedule-item { font-size: 6vw; }
-  .schedule-empty { font-size: 6vw; }
-}
-</style>
-</head>
-
-<body>
-
-<div class="container">
-  <div class="year" id="year"></div>
-  <div class="date" id="date"></div>
-  <div class="weekday" id="weekday"></div>
-  <div class="period" id="period"></div>
-  <div class="time" id="time"></div>
-
-  <div class="schedule">
-    <div class="schedule-title">今日の予定</div>
-    <div id="scheduleList" class="schedule-empty">読み込み中です</div>
-  </div>
-</div>
-
-<script>
-const SCHEDULE_URL = "https://script.google.com/macros/s/AKfycbws2wZCZsBDpybK-zDwA7ZAnoJA-Z8EtsXd18ScDI06DTqlqpzEr5cssdsHRCx240TkTQ/exec";
-
-function updateCalendar() {
-  const now = new Date();
-
-  const y = now.getFullYear();
-  const m = now.getMonth() + 1;
-  const d = now.getDate();
-
-  const hour = now.getHours();
-  const minute = now.getMinutes();
-
-  const weekdays = [
-    "日曜日",
-    "月曜日",
-    "火曜日",
-    "水曜日",
-    "木曜日",
-    "金曜日",
-    "土曜日"
-  ];
-
-  const weekday = weekdays[now.getDay()];
-  const reiwa = y - 2018;
-
-  let period = "";
-
-  if (hour >= 4 && hour < 10) {
-    period = "朝です";
-  } else if (hour >= 10 && hour < 12) {
-    period = "午前です";
-  } else if (hour >= 12 && hour < 17) {
-    period = "午後です";
-  } else if (hour >= 17 && hour < 21) {
-    period = "夕方です";
-  } else {
-    period = "夜です";
-  }
-
-  const mm = String(minute).padStart(2, "0");
-
-  document.getElementById("year").innerHTML =
-    y + "年<br>令和" + reiwa + "年";
-
-  document.getElementById("date").textContent =
-    m + "月" + d + "日";
-
-  document.getElementById("weekday").textContent =
-    weekday;
-
-  document.getElementById("period").textContent =
-    period;
-
-  document.getElementById("time").textContent =
-    hour + ":" + mm;
-}
-
-function loadSchedule() {
-  const oldScript = document.getElementById("scheduleScript");
-
-  if (oldScript) {
-    oldScript.remove();
-  }
-
-  const script = document.createElement("script");
-  script.id = "scheduleScript";
-  script.src = SCHEDULE_URL + "?callback=showSchedule&_=" + new Date().getTime();
-
-  document.body.appendChild(script);
-}
-
-function showSchedule(events) {
-  const scheduleList = document.getElementById("scheduleList");
-
-  if (!events || events.length === 0) {
-    scheduleList.className = "schedule-empty";
-    scheduleList.textContent = "今日の予定はありません";
-    return;
-  }
-
-  scheduleList.className = "";
-
-  scheduleList.innerHTML = events
-    .map(event => {
-      return '<div class="schedule-item">' +
-        event.time + "　" + event.title +
-        '</div>';
-    })
-    .join("");
-}
-
-updateCalendar();
-loadSchedule();
-
-setInterval(updateCalendar, 1000);
-
-// 予定は5分ごとに読み直し
-setInterval(loadSchedule, 5 * 60 * 1000);
-
-// 3時間ごとにページ全体を再読み込み
-setInterval(() => {
-  location.reload();
-}, 3 * 60 * 60 * 1000);
-
-// タップ時に全画面化を試みる
-document.body.addEventListener("click", () => {
-  if (document.documentElement.requestFullscreen) {
-    document.documentElement.requestFullscreen();
-  }
-});
-</script>
-
-</body>
-</html>
+  line-height: 1.25;
