@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>デジタル日めくり</title>
+
 <style>
 /* ===== 画面全体の見た目 ===== */
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
   width: 100vw;
@@ -22,6 +24,7 @@ body {
   text-align: center;
   overflow: hidden;
 }
+
 .container {
   width: 100%;
   height: 100vh;
@@ -30,27 +33,32 @@ body {
   flex-direction: column;
   justify-content: center;
 }
+
 /* ===== 日付と時刻 ===== */
 .year {
   font-size: 4.2vw;
   margin-bottom: 0.6vh;
   line-height: 1.2;
 }
+
 .date {
   font-size: 11vw;
   font-weight: bold;
   line-height: 1.05;
 }
+
 .weekday {
   font-size: 9vw;
   font-weight: bold;
   margin-top: 0.4vh;
 }
+
 .time {
   font-size: 5.8vw;
   font-weight: bold;
   margin-top: 0.8vh;
 }
+
 /* ===== 予定の共通デザイン ===== */
 .schedule-area {
   margin-top: 2vh;
@@ -58,12 +66,14 @@ body {
   grid-template-columns: 1fr;
   gap: 1.2vh;
 }
+
 .schedule-box {
   padding: 1.2vh 2.4vw;
   border: 0.35vw solid #333;
   background: #fffef8;
   text-align: left;
 }
+
 .schedule-title {
   font-size: 3.2vw;
   font-weight: bold;
@@ -71,6 +81,7 @@ body {
   text-align: center;
   color: #666;
 }
+
 .tomorrow-date {
   font-size: 4.4vw;
   font-weight: bold;
@@ -78,10 +89,230 @@ body {
   margin-bottom: 0.8vh;
   text-align: center;
 }
+
 .schedule-list {
   min-height: 10vh;
 }
+
 .schedule-item {
   font-size: 3.8vw;
   font-weight: bold;
   line-height: 1.25;
+  margin-top: 0.55vh;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.schedule-empty {
+  font-size: 3.8vw;
+  font-weight: bold;
+  line-height: 1.35;
+  text-align: center;
+}
+
+/* ===== 今日の予定 ===== */
+.today-box {
+  color: #111;
+  border-color: #333;
+}
+
+/* ===== 明日の予定 ===== */
+.tomorrow-box {
+  color: #0057b8;
+  border-color: #0057b8;
+  background: #eef6ff;
+}
+
+@media (orientation: portrait) {
+  .year { font-size: 5vw; }
+  .date { font-size: 13vw; }
+  .weekday { font-size: 11vw; }
+  .time { font-size: 7vw; }
+  .schedule-title { font-size: 4vw; }
+  .tomorrow-date { font-size: 5.3vw; }
+  .schedule-item { font-size: 4.7vw; }
+  .schedule-empty { font-size: 4.7vw; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ===== 画面に表示する内容 ===== -->
+<div class="container">
+  <div class="year" id="year">日付を読み込み中です</div>
+  <div class="date" id="date">--月--日</div>
+  <div class="weekday" id="weekday">---</div>
+  <div class="time" id="time">--:--</div>
+
+  <div class="schedule-area">
+    <div class="schedule-box today-box">
+      <div class="schedule-title">今日の予定</div>
+      <div id="todayScheduleList" class="schedule-list schedule-empty">読み込み中です</div>
+    </div>
+
+    <div class="schedule-box tomorrow-box">
+      <div class="schedule-title">明日の予定</div>
+      <div id="tomorrowDate" class="tomorrow-date"></div>
+      <div id="tomorrowScheduleList" class="schedule-list schedule-empty">読み込み中です</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== 予定表の読み込み先 ===== */
+const SCHEDULE_URL = "https://script.google.com/macros/s/AKfycby5VT9IkHGiqZtuo8fGGkoKYKEquOeTln6SxBeXWXti5wYJbvOcuFv5zKIx-SfRZ5fIIw/exec";
+
+/* ===== 日付と時刻を表示する部分 ===== */
+function updateCalendar() {
+  const now = new Date();
+
+  const y = now.getFullYear();
+  const m = now.getMonth() + 1;
+  const d = now.getDate();
+
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+
+  const weekdays = [
+    "日曜日",
+    "月曜日",
+    "火曜日",
+    "水曜日",
+    "木曜日",
+    "金曜日",
+    "土曜日"
+  ];
+
+  const weekday = weekdays[now.getDay()];
+  const reiwa = y - 2018;
+  const mm = String(minute).padStart(2, "0");
+
+  document.getElementById("year").textContent = "令和" + reiwa + "年（" + y + "年）";
+  document.getElementById("date").textContent = m + "月" + d + "日";
+  document.getElementById("weekday").textContent = weekday;
+  document.getElementById("time").textContent = hour + ":" + mm;
+}
+
+/* ===== 明日の日付を作る部分 ===== */
+function getTomorrowDateText() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const y = tomorrow.getFullYear();
+  const m = String(tomorrow.getMonth() + 1).padStart(2, "0");
+  const d = String(tomorrow.getDate()).padStart(2, "0");
+
+  return y + "-" + m + "-" + d;
+}
+
+/* ===== 明日の日付を表示する部分 ===== */
+function updateTomorrowDate() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const m = tomorrow.getMonth() + 1;
+  const d = tomorrow.getDate();
+  const weekdays = [
+    "日曜日",
+    "月曜日",
+    "火曜日",
+    "水曜日",
+    "木曜日",
+    "金曜日",
+    "土曜日"
+  ];
+
+  document.getElementById("tomorrowDate").textContent =
+    m + "月" + d + "日 " + weekdays[tomorrow.getDay()];
+}
+
+/* ===== 予定を読み込む部分 ===== */
+function loadSchedule(target) {
+  const oldScript = document.getElementById(target + "ScheduleScript");
+
+  if (oldScript) {
+    oldScript.remove();
+  }
+
+  const callbackName = target === "tomorrow" ? "showTomorrowSchedule" : "showTodaySchedule";
+  const script = document.createElement("script");
+  const dateText = target === "tomorrow" ? getTomorrowDateText() : "";
+  const listId = target === "tomorrow" ? "tomorrowScheduleList" : "todayScheduleList";
+
+  script.id = target + "ScheduleScript";
+  script.onerror = () => {
+    showSchedule(listId, [], "予定を読み込めませんでした");
+  };
+  script.src =
+    SCHEDULE_URL +
+    "?callback=" + callbackName +
+    "&target=" + target +
+    "&date=" + dateText +
+    "&_=" + new Date().getTime();
+
+  document.body.appendChild(script);
+}
+
+/* ===== 今日の予定を表示する部分 ===== */
+function showTodaySchedule(events) {
+  showSchedule("todayScheduleList", events, "今日の予定はありません");
+}
+
+/* ===== 明日の予定を表示する部分 ===== */
+function showTomorrowSchedule(events) {
+  showSchedule("tomorrowScheduleList", events, "明日の予定はありません");
+}
+
+/* ===== 予定の表示を整える部分 ===== */
+function showSchedule(listId, events, emptyText) {
+  const scheduleList = document.getElementById(listId);
+  const limitedEvents = events ? events.slice(0, 3) : [];
+
+  if (limitedEvents.length === 0) {
+    scheduleList.className = "schedule-list schedule-empty";
+    scheduleList.textContent = emptyText;
+    return;
+  }
+
+  scheduleList.className = "schedule-list";
+  scheduleList.innerHTML = limitedEvents
+    .map(event => {
+      const time = event.time ? event.time + "　" : "";
+      return '<div class="schedule-item">' +
+        time + event.title +
+        '</div>';
+    })
+    .join("");
+}
+
+updateCalendar();
+updateTomorrowDate();
+loadSchedule("today");
+loadSchedule("tomorrow");
+
+setInterval(updateCalendar, 1000);
+
+/* ===== 予定は5分ごとに読み直し ===== */
+setInterval(() => {
+  loadSchedule("today");
+  loadSchedule("tomorrow");
+}, 5 * 60 * 1000);
+
+/* ===== 3時間ごとにページ全体を再読み込み ===== */
+setInterval(() => {
+  location.reload();
+}, 3 * 60 * 60 * 1000);
+
+/* ===== タップ時に全画面化を試みる ===== */
+document.body.addEventListener("click", () => {
+  if (document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen();
+  }
+});
+</script>
+
+</body>
+</html>
+
